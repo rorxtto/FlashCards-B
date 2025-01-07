@@ -6,11 +6,16 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import app.entity.Questoes;
 import app.entity.SubMateria;
+import app.repository.QuestoesRepository;
 import app.repository.SubMateriaRepository;
 
 @Service
 public class SubMateriaService {
+	
+	@Autowired
+	private QuestoesRepository questoesRepository;
 	
 	@Autowired
 	private SubMateriaRepository submateriaRepository;
@@ -29,6 +34,16 @@ public class SubMateriaService {
 	}
 	
 	public String delete (Long id) {
+		
+
+
+		 List<Questoes> listaQuestoes = questoesRepository.findBySubmateriaId(id);
+
+
+		    for (Questoes questao : listaQuestoes) {
+		        questoesRepository.deleteById(questao.getId());
+		    }
+		
 		this.submateriaRepository.deleteById(id);
 		return "Sub-Materia deletada com sucesso";
 	}

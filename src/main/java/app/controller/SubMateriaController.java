@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class SubMateriaController {
 	@Autowired
 	private SubMateriaService subMateriaService;
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/save")
 	public ResponseEntity<String> save(@Valid @RequestBody SubMateria submateria){
 		try {
@@ -66,6 +68,7 @@ public class SubMateriaController {
 
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping ("/delete/{id}")
 	public ResponseEntity<String> delete (@PathVariable Long id){
 
@@ -80,6 +83,7 @@ public class SubMateriaController {
 
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<String> update (@Valid @RequestBody SubMateria subMateria, @PathVariable Long id) {
 

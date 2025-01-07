@@ -32,6 +32,9 @@ public class SubMateria {
     @JsonIgnoreProperties("submateria")
     @NotNull(message = "Uma SubMateria deve estar associada a uma Materia!")
     private Materia materia; 
+    
+    
+    
 
 	public String getNome() {
 		return nome;

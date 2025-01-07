@@ -32,6 +32,7 @@ public class Materia {
 	private String nome;
     
     @NotBlank(message = "A descrição da matéria é obrigatória.")
+    @Column(columnDefinition = "TEXT")
 	private String descricao;
 	
     @NotBlank(message = "A imagem em formato Base64 é obrigatória.	")

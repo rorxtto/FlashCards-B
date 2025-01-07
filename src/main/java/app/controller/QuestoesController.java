@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class QuestoesController {
 	@Autowired
 	private QuestoesService questoesService;
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/save")
 	public ResponseEntity<String> save(@Valid @RequestBody Questoes questoes){
 
@@ -70,6 +72,7 @@ public class QuestoesController {
 
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping ("/delete/{id}")
 	public ResponseEntity<String> delete (@PathVariable Long id){
 
@@ -84,6 +87,7 @@ public class QuestoesController {
 
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<String> update (@Valid @RequestBody Questoes questoes, @PathVariable Long id) {
 

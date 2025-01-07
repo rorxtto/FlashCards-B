@@ -49,12 +49,10 @@ public class Questoes {
 	    
 	    @OneToMany(cascade = CascadeType.ALL, mappedBy = "questoes")
 	    @JsonIgnoreProperties("questoes") 
-	    @Size(min = 1, message = "A questão deve conter pelo menos uma alternativa.")
 	    private List<Alternativas> alternativas;
 	    
 	    @ManyToOne(cascade = CascadeType.ALL)
 	    @JoinColumn(name = "alternativa_correta_id") 
-	    @NotNull(message = "A questão deve ter uma alternativa correta.")
 	    @JsonIgnoreProperties("questoes") 
 	    private Alternativas alternativaCorreta;
 	    

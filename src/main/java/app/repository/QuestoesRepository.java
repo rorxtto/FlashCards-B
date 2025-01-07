@@ -11,6 +11,9 @@ import jakarta.websocket.server.PathParam;
 
 public interface QuestoesRepository extends JpaRepository<Questoes, Long>{
 	
+    List<Questoes> findBySubmateriaId(Long submateriaId);
+
+	
 	/*
 	@Query("UPDATE Questoes q SET q.muitoFacil = (q.muitoFacil + 1) WHERE q.id = :idQuestao")
 	public void avaliarMuitoFacil(long idQuestao);
