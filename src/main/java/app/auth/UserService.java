@@ -26,5 +26,17 @@ public class UserService {
         user.setRole("USER");
         return userRepository.save(user);
     }
+    
+    public void resetPassword(String username, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado!"));
+        
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new IllegalStateException("Não é permitido alterar a senha de um usuário ADMIN.");
+        }
+        
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 
 }
