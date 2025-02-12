@@ -9,110 +9,119 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.List;
 
 import app.config.JwtServiceGenerator;
 
 @Service
 public class LoginService {
-	
-	 @Autowired
-	    private LoginRepository repository;
-	    @Autowired
-	    private JwtServiceGenerator jwtService;
-	    @Autowired
-	    private AuthenticationManager authenticationManager;
 
-	    // Token da API Hotmart (substituir pelo valor real)
-	    private final String HOTMART_API_URL = "https://api.hotmart.com/payments/v1/subscriptions";
-	    
-	    
+    @Autowired
+    private LoginRepository repository;
+    @Autowired
+    private JwtServiceGenerator jwtService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-	    public String logar(Login login) {
-	        // Autenticar usuário
-	        authenticationManager.authenticate(
-	            new UsernamePasswordAuthenticationToken(
-	                login.getUsername(),
-	                login.getPassword()
-	            )
-	        );
+    private static final String HOTMART_API_URL = "https://developers.hotmart.com/payments/api/v1/subscriptions";
+    private static final String HOTMART_AUTH_URL = "https://api-sec-vlc.hotmart.com/security/oauth/token";
+    private static final String CLIENT_ID = "55d72f9d-3c3e-4ca6-ab3b-8e6cca8e1bf7";
+    private static final String CLIENT_SECRET = "4002264d-4b3f-48ce-8ad5-4f92a078adee";
+    private static final String BASIC_AUTH = "Basic NTVkNzJmOWQtM2MzZS00Y2E2LWFiM2ItOGU2Y2NhOGUxYmY3OjQwMDIyNjRkLTRiM2YtNDhjZS04YWQ1LTRmOTJhMDc4YWRlZQ==";
 
-	        // Buscar usuário no banco
-	        User user = repository.findByUsername(login.getUsername()).orElseThrow(() ->
-	            new RuntimeException("Usuário não encontrado")
-	        );
+    private String accessToken;
+    private final ReentrantLock lock = new ReentrantLock();
 
-	        // Se o usuário tiver a role ADMIN, não verificar assinatura
-	        if (user.getRole().contains("ADMIN")) {
-	            return jwtService.generateToken(user);
-	        }
+    public String logar(Login login) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        login.getUsername(),
+                        login.getPassword()
+                )
+        );
 
-	        // Validar assinatura ativa no Hotmart
-	        if (!verificarAssinaturaAtiva(user.getUsername())) {
-	            throw new RuntimeException("Assinatura inativa ou não encontrada");
-	        }
+        User user = repository.findByUsername(login.getUsername()).orElse(null);
+        if (user == null) {
+            throw new RuntimeException("Usuário não encontrado");
+        }
 
-	        // Gerar JWT e retornar
-	        return jwtService.generateToken(user);
-	    }
+        if (!user.getRole().contains("ADMIN") && !isAssinaturaAtiva(user.getUsername())) {
+            throw new RuntimeException("Assinatura inativa ou inexistente");
+        }
 
-	    private String obterNovoTokenHotmart() {
-	        RestTemplate restTemplate = new RestTemplate();
+        return jwtService.generateToken(user);
+    }
 
-	        String url = "https://api-sec-vlc.hotmart.com/security/oauth/token";
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-	        headers.set("Authorization", "Basic NTVkNzJmOWQtM2MzZS00Y2E2LWFiM2ItOGU2Y2NhOGUxYmY3OjQwMDIyNjRkLTRiM2YtNDhjZS04YWQ1LTRmOTJhMDc4YWRlZQ==");
+    private boolean isAssinaturaAtiva(String username) {
+        RestTemplate restTemplate = new RestTemplate();
+        String token = getAccessToken();
 
-	        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-	        body.add("grant_type", "client_credentials");
-	        body.add("client_id", "55d72f9d-3c3e-4ca6-ab3b-8e6cca8e1bf7");
-	        body.add("client_secret", "4002264d-4b3f-48ce-8ad5-4f92a078adee");
+        String url = UriComponentsBuilder.fromHttpUrl(HOTMART_API_URL)
+                .queryParam("product_id", "4805348")
+                .queryParam("subscriber_email", username)
+                .toUriString();
 
-	        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        headers.set("Content-Type", "application/json");
+        
+        System.out.println("URL: " + url);
+        System.out.println("Token: " + token);
+        System.out.println("Headers: " + headers);
 
-	        try {
-	            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-	            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-	                return (String) response.getBody().get("access_token");
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-	        throw new RuntimeException("Erro ao obter novo token da Hotmart.");
-	    }
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+        
+        System.out.println("Response Status Code: " + response.getStatusCode());
+        System.out.println("Response Body: " + response.getBody());
 
-	    private boolean verificarAssinaturaAtiva(String email) {
-	        String tokenAtualizado = obterNovoTokenHotmart();
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
 
-	        RestTemplate restTemplate = new RestTemplate();
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.setBearerAuth(tokenAtualizado);
-	        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (items != null && !items.isEmpty()) {
+            String status = (String) items.get(0).get("status");
+            return "ACTIVE".equalsIgnoreCase(status);
+        }
 
-	        String url = HOTMART_API_URL + "?subscriber_email=" + email + "&product_id=4805348";
+        return false;
+    }
 
-	        HttpEntity<String> entity = new HttpEntity<>(headers);
+    private String getAccessToken() {
+        lock.lock();
+        try {
+            if (accessToken == null || accessToken.isEmpty()) {
+                refreshAccessToken();
+            }
+            return accessToken;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	        try {
-	            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-	            if (response.getStatusCode() == HttpStatus.OK) {
-	                Map<String, Object> body = response.getBody();
-	                if (body != null && body.containsKey("items")) {
-	                    for (Map<String, Object> item : (List<Map<String, Object>>) body.get("items")) {
-	                        String status = (String) item.get("status");
-	                        if ("ACTIVE".equals(status)) {
-	                            return true;
-	                        }
-	                    }
-	                }
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
+    private void refreshAccessToken() {
+        RestTemplate restTemplate = new RestTemplate();
 
-	        return false;
-	    }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", BASIC_AUTH);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+
+        String body = "grant_type=client_credentials&client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(HOTMART_AUTH_URL, HttpMethod.POST, request, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("access_token")) {
+                accessToken = (String) responseBody.get("access_token");
+            }
+        } else {
+            throw new RuntimeException("Falha ao obter token de acesso");
+        }
+    }
 }
