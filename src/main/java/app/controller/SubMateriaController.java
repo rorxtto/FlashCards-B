@@ -98,6 +98,11 @@ public class SubMateriaController {
 
 	}
 	
+	@GetMapping("/com-quantidade-questoes")
+	public ResponseEntity<List<SubMateria>> getSubmateriasComQuantidadeQuestoes() {
+	    return ResponseEntity.ok(subMateriaService.getSubmateriasComQuantidadeQuestoes());
+	}
+	
 	
 
 }

@@ -1,5 +1,7 @@
 package app.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
@@ -7,6 +9,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,6 +36,9 @@ public class SubMateria {
     @JsonIgnoreProperties("submateria")
     @NotNull(message = "Uma SubMateria deve estar associada a uma Materia!")
     private Materia materia; 
+    
+    @Transient
+    private Long quantidadeQuestoes;
     
     
     
@@ -59,6 +66,15 @@ public class SubMateria {
 	public Materia getMateria() {
 		return materia;
 	}
+	
+	public Long getQuantidadeQuestoes() {
+	    return quantidadeQuestoes;
+	}
+
+	public void setQuantidadeQuestoes(Long quantidadeQuestoes) {
+	    this.quantidadeQuestoes = quantidadeQuestoes;
+	}
+	
 
    
 

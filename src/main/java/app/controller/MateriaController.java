@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import app.entity.Materia;
+import app.repository.MateriaRepository;
 import app.service.MateriaService;
 import jakarta.validation.Valid;
 
@@ -28,7 +29,7 @@ public class MateriaController {
 	@Autowired
 	private MateriaService materiaService;
 
-	@PreAuthorize("hasRole('ADMIN')")
+
 	@PostMapping("/save")
 	public ResponseEntity<String> save(@Valid @RequestBody Materia materia){
 
@@ -68,7 +69,6 @@ public class MateriaController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping ("/delete/{id}")
 	public ResponseEntity<String> delete (@PathVariable Long id){
 
@@ -83,7 +83,6 @@ public class MateriaController {
 
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/update/{id}")
 	public ResponseEntity<String> update (@RequestBody Materia materia, @PathVariable Long id) {
 
@@ -97,6 +96,7 @@ public class MateriaController {
 		}
 
 	}
+	
 	
 	
 

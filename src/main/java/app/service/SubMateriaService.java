@@ -2,6 +2,7 @@ package app.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,5 +59,20 @@ public class SubMateriaService {
 		this.submateriaRepository.save(subMateria);
 		return "Materia foi atualizada com sucesso";
 	}
+	
+	public List<SubMateria> getSubmateriasComQuantidadeQuestoes() {
+	    List<Object[]> results = submateriaRepository.findSubmateriasWithQuantidadeQuestoes();
+
+	    return results.stream().map(r -> {
+	        SubMateria submateria = (SubMateria) r[0];
+	        Long quantidade = (Long) r[1];
+	        submateria.setQuantidadeQuestoes(quantidade);
+	        return submateria;
+	    }).collect(Collectors.toList());
+	}
+
+
+
+
 
 }
