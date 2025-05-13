@@ -3,6 +3,7 @@ package app.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,6 +71,37 @@ public class QuestoesController {
 	        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
 
+	}
+	
+	@GetMapping("/paginated")
+	public ResponseEntity<Page<Questoes>> findAllPaginated(
+			@RequestParam(defaultValue = "0") int page, 
+			@RequestParam(defaultValue = "10") int size){
+
+		try {
+			Page<Questoes> questoesPage = this.questoesService.findAllPaginated(page, size);
+			return new ResponseEntity<>(questoesPage, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+	        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/filtered")
+	public ResponseEntity<Page<Questoes>> findAllPaginatedAndFiltered(
+			@RequestParam(defaultValue = "0") int page, 
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) String filtroEnunciado,
+			@RequestParam(required = false) Long submateriaId){
+
+		try {
+			Page<Questoes> questoesPage = this.questoesService.findAllPaginatedAndFiltered(
+				page, size, filtroEnunciado, submateriaId);
+			return new ResponseEntity<>(questoesPage, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+	        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")

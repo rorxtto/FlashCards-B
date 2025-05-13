@@ -5,7 +5,13 @@ import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import app.entity.Questoes;
 import app.entity.SubMateria;
@@ -47,6 +53,37 @@ public class QuestoesService {
 	public List<Questoes> findAll (){
 		List<Questoes> lista = this.questoesRepository.findAll();
 		return lista;
+	}
+	
+	public Page<Questoes> findAllPaginated(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		return this.questoesRepository.findAll(pageable);
+	}
+	
+	public Page<Questoes> findAllPaginatedAndFiltered(int page, int size, String filtroEnunciado, Long submateriaId) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+		
+		// Criar especificações para filtros
+		Specification<Questoes> spec = Specification.where(null);
+		
+		// Adicionar filtro por enunciado se fornecido
+		if (StringUtils.hasText(filtroEnunciado)) {
+			spec = spec.and((root, query, criteriaBuilder) -> 
+				criteriaBuilder.like(
+					criteriaBuilder.lower(root.get("enunciado")), 
+					"%" + filtroEnunciado.toLowerCase() + "%"
+				)
+			);
+		}
+		
+		// Adicionar filtro por submateria se fornecido
+		if (submateriaId != null) {
+			spec = spec.and((root, query, criteriaBuilder) -> 
+				criteriaBuilder.equal(root.get("submateria").get("id"), submateriaId)
+			);
+		}
+		
+		return this.questoesRepository.findAll(spec, pageable);
 	}
 
 	public String update (Questoes questoes, Long id) {

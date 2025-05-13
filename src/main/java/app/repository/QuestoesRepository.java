@@ -2,16 +2,26 @@ package app.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import app.entity.Questoes;
 import app.entity.SubMateria;
 import jakarta.websocket.server.PathParam;
 
-public interface QuestoesRepository extends JpaRepository<Questoes, Long>{
+public interface QuestoesRepository extends JpaRepository<Questoes, Long>, JpaSpecificationExecutor<Questoes> {
 	
     List<Questoes> findBySubmateriaId(Long submateriaId);
+    
+    // Método para buscar questões com paginação
+    Page<Questoes> findAll(Pageable pageable);
+    
+    // Método para buscar questões com paginação e filtros
+    Page<Questoes> findAll(Specification<Questoes> spec, Pageable pageable);
 
 	
 	/*
