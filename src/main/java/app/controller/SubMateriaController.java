@@ -155,5 +155,14 @@ public class SubMateriaController {
 	        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 	    }
 	}
-
+	
+	@GetMapping("/com-quantidade-questoes/materia/{materiaId}")
+	public ResponseEntity<List<SubMateria>> getSubmateriasComQuantidadeQuestoesByMateriaId(@PathVariable Long materiaId) {
+	    try {
+	        List<SubMateria> submaterias = subMateriaService.getSubmateriasComQuantidadeQuestoesByMateriaId(materiaId);
+	        return new ResponseEntity<>(submaterias, HttpStatus.OK);
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+	    }
+	}
 }

@@ -23,10 +23,18 @@ public interface SubMateriaRepository extends JpaRepository<SubMateria, Long>, J
     // Método para buscar submaterias por materiaId com paginação
     Page<SubMateria> findByMateriaId(Long materiaId, Pageable pageable);
     
-    @Query("SELECT s, COALESCE(COUNT(q.id), 0) " +
-    	       "FROM SubMateria s " +
-    	       "LEFT JOIN Questoes q ON s.id = q.submateria.id " +
-    	       "GROUP BY s.id")
-    	List<Object[]> findSubmateriasWithQuantidadeQuestoes();
-
+    @Query(value = "SELECT s.*, COALESCE(q.quantidade, 0) as quantidade_questoes " +
+           "FROM sub_materia s " +
+           "LEFT JOIN (SELECT submateria_id, COUNT(*) as quantidade FROM questoes GROUP BY submateria_id) q " +
+           "ON s.id = q.submateria_id", 
+           nativeQuery = true)
+    List<Object[]> findSubmateriasWithQuantidadeQuestoes();
+    
+    @Query(value = "SELECT s.*, COALESCE(q.quantidade, 0) as quantidade_questoes " +
+           "FROM sub_materia s " +
+           "LEFT JOIN (SELECT submateria_id, COUNT(*) as quantidade FROM questoes GROUP BY submateria_id) q " +
+           "ON s.id = q.submateria_id " +
+           "WHERE s.materia_id = ?1", 
+           nativeQuery = true)
+    List<Object[]> findSubmateriasWithQuantidadeQuestoesByMateriaId(Long materiaId);
 }

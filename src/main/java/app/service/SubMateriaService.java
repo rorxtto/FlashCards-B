@@ -104,17 +104,31 @@ public class SubMateriaService {
 	
 	public List<SubMateria> getSubmateriasComQuantidadeQuestoes() {
 	    List<Object[]> results = submateriaRepository.findSubmateriasWithQuantidadeQuestoes();
-
+	    
+	    return processarResultadosSubmateria(results);
+	}
+	
+	public List<SubMateria> getSubmateriasComQuantidadeQuestoesByMateriaId(Long materiaId) {
+	    List<Object[]> results = submateriaRepository.findSubmateriasWithQuantidadeQuestoesByMateriaId(materiaId);
+	    
+	    return processarResultadosSubmateria(results);
+	}
+	
+	private List<SubMateria> processarResultadosSubmateria(List<Object[]> results) {
 	    return results.stream().map(r -> {
-	        SubMateria submateria = (SubMateria) r[0];
-	        Long quantidade = (Long) r[1];
+	        Object[] row = (Object[]) r;
+	        SubMateria submateria = new SubMateria();
+	        
+	        // Mapear os campos da consulta nativa para o objeto SubMateria
+	        submateria.setId(((Number) row[0]).longValue());
+	        submateria.setNome((String) row[1]);
+	        // Outros campos conforme necessário
+	        
+	        // Definir a quantidade de questões
+	        Long quantidade = row[row.length - 1] != null ? ((Number) row[row.length - 1]).longValue() : 0L;
 	        submateria.setQuantidadeQuestoes(quantidade);
+	        
 	        return submateria;
 	    }).collect(Collectors.toList());
 	}
-
-
-
-
-
 }
