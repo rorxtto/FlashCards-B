@@ -28,6 +28,7 @@ public class JwtServiceGenerator {
       extraClaims.put("username", userDetails.getUsername());
       extraClaims.put("id", userDetails.getId().toString());
       extraClaims.put("role", userDetails.getRole());
+      extraClaims.put("fullName", userDetails.getFullName());
       extraClaims.put("outracoisa", "teste");
 	  
       

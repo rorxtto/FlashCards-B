@@ -31,7 +31,6 @@ public class Materia {
     @NotBlank(message = "O nome da matéria é obrigatório.")
 	private String nome;
     
-    @NotBlank(message = "A descrição da matéria é obrigatória.")
     @Column(columnDefinition = "TEXT")
 	private String descricao;
 	

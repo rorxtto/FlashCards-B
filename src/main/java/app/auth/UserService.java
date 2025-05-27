@@ -16,7 +16,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String username, String password) {
+    public User registerUser(String username, String password, String fullName) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username já existe!");
         }
@@ -24,6 +24,7 @@ public class UserService {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("USER");
+        user.setFullName(fullName);
         return userRepository.save(user);
     }
     

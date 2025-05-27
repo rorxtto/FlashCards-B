@@ -37,6 +37,9 @@ public class User implements UserDetails{
     @Column(nullable = false)
 	private String role;
     
+    @Column(nullable = false)
+    private String fullName;
+    
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		List<GrantedAuthority> authorities = new ArrayList<>();
@@ -107,6 +110,12 @@ public class User implements UserDetails{
 		this.password = password;
 	}
 
+	public String getFullName() {
+		return fullName;
+	}
 
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
 
 }
